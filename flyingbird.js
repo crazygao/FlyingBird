@@ -21,6 +21,7 @@ const fsSource = `
         gl_FragColor = vColor;
     }
 `;
+var squareRotation = 0.0;
 
 main();
 function main() {
@@ -40,8 +41,20 @@ function main() {
             modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
         }
     };
-    drawScene(gl, programInfo, buffers);
+    
+    var then = 0;
 
+    var then = 0;
+    function render(now) {
+        now *= 0.001;
+        const deltaTime = now - then;
+        then = now;
+
+        drawScene(gl, programInfo, buffers, deltaTime);
+
+        requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
 
 }
 
@@ -118,7 +131,32 @@ function initBuffers(gl) {
     };
 }
 
-function drawScene(gl, programInfo, buffers) {
+// Matrix push and pop
+var mvMatrixStack = [];
+function mvPushMatrix(m) {
+    if(m) {
+        mvMatrixStack.push(m.slice());
+        mvMatrix = m.slice();
+    } else {
+        mvMatrixStack.push(mvMatrix.slice());
+    }
+}
+
+function mvPopMatrix() {
+    if (!mvMatrixStack.length) {
+        //ERROR
+    } else {
+        mvMatrix = mvMatrixStack.pop();
+        return mvMatrix;
+    }
+}
+
+function mvRotate(angle, v) {
+    var inRadius = angle * Math.PI / 180.0;
+    var m = Matrix.Ro
+}
+
+function drawScene(gl, programInfo, buffers, deltaTime) {
     gl.clearColor(0.0, 0.0, 0.0, 1.0); // Black, fully opaque
     gl.clearDepth(1.0); // clear everything
     gl.enable(gl.DEPTH_TEST); // enable depth testing
@@ -143,7 +181,7 @@ function drawScene(gl, programInfo, buffers) {
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
     const modelViewMatrix = mat4.create();
     mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
-    
+    mat4.rotate(modelViewMatrix, modelViewMatrix, squareRotation, [0, 0, 1]);
     // Tell webgl how to pull out the positions from the position
     // buffer into the vertexPosition attribute.
     {
@@ -193,4 +231,6 @@ function drawScene(gl, programInfo, buffers) {
         const vertexCount = 4;
         gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
     }
+
+    squareRotation += deltaTime;
 }
