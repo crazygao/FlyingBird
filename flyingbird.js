@@ -156,6 +156,8 @@ function mvRotate(angle, v) {
     var m = Matrix.Ro
 }
 
+// gl.drawArrays: draw 2D programs
+// gl.drawElemnts: draw 3D elements
 function drawScene(gl, programInfo, buffers, deltaTime) {
     gl.clearColor(0.0, 0.0, 0.0, 1.0); // Black, fully opaque
     gl.clearDepth(1.0); // clear everything
